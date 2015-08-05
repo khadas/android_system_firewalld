@@ -1,6 +1,16 @@
-// Copyright 2014 The Chromium OS Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2014 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #ifndef FIREWALLD_FIREWALL_SERVICE_H_
 #define FIREWALLD_FIREWALL_SERVICE_H_
@@ -11,10 +21,14 @@
 #include <base/memory/weak_ptr.h>
 #include <chromeos/dbus/dbus_object.h>
 
-#include "permission_broker/dbus-proxies.h"
+#if defined(__BRILLO__)
+# include "dbus_bindings/adaptors.h"
+#else
+# include "permission_broker/dbus-proxies.h"
+# include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
+#endif  // __BRILLO__
 
-#include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
-#include "firewalld/iptables.h"
+#include "iptables.h"
 
 using CompletionAction =
     chromeos::dbus_utils::AsyncEventSequencer::CompletionAction;
@@ -31,11 +45,15 @@ class FirewallService : public org::chromium::FirewalldAdaptor {
   void RegisterAsync(const CompletionAction& callback);
 
  private:
+#if !defined(__BRILLO__)
   void OnPermissionBrokerRemoved(const dbus::ObjectPath& path);
+#endif  // __BRILLO__
 
   chromeos::dbus_utils::DBusObject dbus_object_;
+#if !defined(__BRILLO__)
   std::unique_ptr<org::chromium::PermissionBroker::ObjectManagerProxy>
       permission_broker_;
+#endif  // __BRILLO__
   IpTables iptables_;
 
   base::WeakPtrFactory<FirewallService> weak_ptr_factory_{this};

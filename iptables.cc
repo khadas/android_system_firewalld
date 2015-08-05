@@ -1,8 +1,18 @@
-// Copyright 2014 The Chromium OS Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2014 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-#include "firewalld/iptables.h"
+#include "iptables.h"
 
 #include <linux/capability.h>
 
@@ -17,12 +27,17 @@
 #include <chromeos/process.h>
 
 namespace {
+#if defined(__BRILLO__)
+const char kIpTablesPath[] = "/system/bin/iptables";
+const char kIp6TablesPath[] = "/system/bin/ip6tables";
+const char kIpPath[] = "/system/bin/ip";
+#else
 const char kIpTablesPath[] = "/sbin/iptables";
 const char kIp6TablesPath[] = "/sbin/ip6tables";
-
 const char kIpPath[] = "/bin/ip";
-
 const char kUnprivilegedUser[] = "nobody";
+#endif  // __BRILLO__
+
 const uint64_t kIpTablesCapMask =
     CAP_TO_MASK(CAP_NET_ADMIN) | CAP_TO_MASK(CAP_NET_RAW);
 
@@ -56,6 +71,12 @@ bool IsValidInterfaceName(const std::string& iface) {
 }  // namespace
 
 namespace firewalld {
+
+IpTables::IpTables() {
+#if defined(__BRILLO__)
+  ip6_enabled_ = false;
+#endif  // __BRILLO__
+}
 
 IpTables::~IpTables() {
   // Plug all holes when destructed.
@@ -184,11 +205,22 @@ bool IpTables::AddAcceptRules(ProtocolEnum protocol,
     LOG(ERROR) << "Could not add ACCEPT rule using '" << kIpTablesPath << "'";
     return false;
   }
-  if (!AddAcceptRule(kIp6TablesPath, protocol, port, interface)) {
-    LOG(ERROR) << "Could not add ACCEPT rule using '" << kIp6TablesPath << "'";
+
+  if (AddAcceptRule(kIp6TablesPath, protocol, port, interface)) {
+    // This worked, record this fact and insist that it works thereafter.
+    ip6_enabled_ = true;
+  } else if (ip6_enabled_) {
+    // It's supposed to work, fail.
+    LOG(ERROR) << "Could not add ACCEPT rule using '" << kIp6TablesPath
+               << "', aborting operation";
     DeleteAcceptRule(kIpTablesPath, protocol, port, interface);
     return false;
+  } else {
+    // It never worked, just ignore it.
+    LOG(WARNING) << "Could not add ACCEPT rule using '" << kIp6TablesPath
+                 << "', ignoring";
   }
+
   return true;
 }
 
@@ -197,8 +229,8 @@ bool IpTables::DeleteAcceptRules(ProtocolEnum protocol,
                                  const std::string& interface) {
   bool ip4_success = DeleteAcceptRule(kIpTablesPath, protocol, port,
                                       interface);
-  bool ip6_success = DeleteAcceptRule(kIp6TablesPath, protocol, port,
-                                      interface);
+  bool ip6_success = !ip6_enabled_ || DeleteAcceptRule(kIp6TablesPath, protocol,
+                                                       port, interface);
   return ip4_success && ip6_success;
 }
 
@@ -348,7 +380,11 @@ int IpTables::ExecvNonRoot(const std::vector<std::string>& argv,
                            uint64_t capmask) {
   chromeos::Minijail* m = chromeos::Minijail::GetInstance();
   minijail* jail = m->New();
+#if !defined(__BRILLO__)
+  // TODO(garnold) This needs to be re-enabled once we figure out which
+  // unprivileged user we want to use.
   m->DropRoot(jail, kUnprivilegedUser, kUnprivilegedUser);
+#endif  // __BRILLO__
   m->UseCapabilities(jail, capmask);
 
   std::vector<char*> args;

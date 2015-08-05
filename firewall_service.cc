@@ -1,11 +1,21 @@
-// Copyright 2014 The Chromium OS Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2014 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-#include "firewalld/firewall_service.h"
+#include "firewall_service.h"
 
-#include "firewalld/dbus_interface.h"
-#include "firewalld/iptables.h"
+#include "dbus_interface.h"
+#include "iptables.h"
 
 namespace firewalld {
 
@@ -18,6 +28,7 @@ FirewallService::FirewallService(
 void FirewallService::RegisterAsync(const CompletionAction& callback) {
   RegisterWithDBusObject(&dbus_object_);
 
+#if !defined(__BRILLO__)
   // Track permission_broker's lifetime so that we can close firewall holes
   // if/when permission_broker exits.
   permission_broker_.reset(
@@ -26,13 +37,16 @@ void FirewallService::RegisterAsync(const CompletionAction& callback) {
   permission_broker_->SetPermissionBrokerRemovedCallback(
       base::Bind(&FirewallService::OnPermissionBrokerRemoved,
                  weak_ptr_factory_.GetWeakPtr()));
+#endif  // __BRILLO__
 
   dbus_object_.RegisterAsync(callback);
 }
 
+#if !defined(__BRILLO__)
 void FirewallService::OnPermissionBrokerRemoved(const dbus::ObjectPath& path) {
   LOG(INFO) << "permission_broker died, plugging all firewall holes";
   iptables_.PlugAllHoles();
 }
+#endif  // __BRILLO__
 
 }  // namespace firewalld

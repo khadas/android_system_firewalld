@@ -1,6 +1,16 @@
-// Copyright 2014 The Chromium OS Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2014 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #ifndef FIREWALLD_IPTABLES_H_
 #define FIREWALLD_IPTABLES_H_
@@ -15,7 +25,11 @@
 #include <base/macros.h>
 #include <chromeos/errors/error.h>
 
-#include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
+#if defined(__BRILLO__)
+# include "dbus_bindings/adaptors.h"
+#else
+# include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
+#endif  // __BRILLO__
 
 namespace firewalld {
 
@@ -25,7 +39,7 @@ class IpTables : public org::chromium::FirewalldInterface {
  public:
   typedef std::pair<uint16_t, std::string> Hole;
 
-  IpTables() = default;
+  IpTables();
   ~IpTables();
 
   // D-Bus methods.
@@ -90,6 +104,12 @@ class IpTables : public org::chromium::FirewalldInterface {
   // Keep track of firewall holes to avoid adding redundant firewall rules.
   std::set<Hole> tcp_holes_;
   std::set<Hole> udp_holes_;
+
+  // Tracks whether IPv6 filtering is enabled. If set to |true| (the default),
+  // then it is required to be working. If |false|, then adding of IPv6 rules is
+  // still attempted but not mandatory; however, if it is successful even once,
+  // then it'll be changed to |true| and enforced thereafter.
+  bool ip6_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(IpTables);
 };

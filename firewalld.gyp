@@ -38,7 +38,7 @@
         'dbus_adaptors_out_dir': 'include/firewalld/dbus_adaptor',
       },
       'sources': [
-        'dbus_bindings/org.chromium.Firewalld.xml',
+        'dbus_bindings/org.chromium.Firewalld.dbus.xml',
       ],
       'includes': ['../common-mk/generate-dbus-adaptors.gypi'],
     },
