@@ -36,6 +36,8 @@ define firewalld_common
   LOCAL_CPPFLAGS += -Wno-sign-promo
 endef
 
+ifeq ($(HOST_OS),linux)
+
 # === libfirewalld (static library) ===
 include $(CLEAR_VARS)
 LOCAL_MODULE := libfirewalld
@@ -80,3 +82,5 @@ LOCAL_SRC_FILES := \
 LOCAL_STATIC_LIBRARIES := libfirewalld libgmock
 $(eval $(firewalld_common))
 include $(BUILD_NATIVE_TEST)
+
+endif # HOST_OS == linux
