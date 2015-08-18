@@ -60,16 +60,18 @@ $(eval $(firewalld_common))
 include $(BUILD_EXECUTABLE)
 
 # === init.firewalld.rc ===
+ifdef INITRC_TEMPLATE
 include $(CLEAR_VARS)
 LOCAL_MODULE := init.firewalld.rc
 LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_PATH := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_INITRCD)
 
-ifdef INITRC_TEMPLATE
 include $(BUILD_SYSTEM)/base_rules.mk
 
+my_groups := net_admin net_raw
+.PHONY: $(LOCAL_BUILT_MODULE)
 $(LOCAL_BUILT_MODULE): $(INITRC_TEMPLATE)
-	$(call generate-initrc-file,firewalld,,net_admin net_raw)
+	$(call generate-initrc-file,firewalld,,$(my_groups))
 endif
 
 # === unittest ===
