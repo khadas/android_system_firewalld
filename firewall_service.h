@@ -21,12 +21,12 @@
 #include <base/memory/weak_ptr.h>
 #include <chromeos/dbus/dbus_object.h>
 
-#if defined(__BRILLO__)
+#if defined(__ANDROID__)
 # include "dbus_bindings/org.chromium.Firewalld.h"
 #else
 # include "permission_broker/dbus-proxies.h"
 # include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
-#endif  // __BRILLO__
+#endif  // __ANDROID__
 
 #include "iptables.h"
 
@@ -45,15 +45,15 @@ class FirewallService : public org::chromium::FirewalldAdaptor {
   void RegisterAsync(const CompletionAction& callback);
 
  private:
-#if !defined(__BRILLO__)
+#if !defined(__ANDROID__)
   void OnPermissionBrokerRemoved(const dbus::ObjectPath& path);
-#endif  // __BRILLO__
+#endif  // __ANDROID__
 
   chromeos::dbus_utils::DBusObject dbus_object_;
-#if !defined(__BRILLO__)
+#if !defined(__ANDROID__)
   std::unique_ptr<org::chromium::PermissionBroker::ObjectManagerProxy>
       permission_broker_;
-#endif  // __BRILLO__
+#endif  // __ANDROID__
   IpTables iptables_;
 
   base::WeakPtrFactory<FirewallService> weak_ptr_factory_{this};

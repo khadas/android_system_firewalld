@@ -28,7 +28,7 @@ FirewallService::FirewallService(
 void FirewallService::RegisterAsync(const CompletionAction& callback) {
   RegisterWithDBusObject(&dbus_object_);
 
-#if !defined(__BRILLO__)
+#if !defined(__ANDROID__)
   // Track permission_broker's lifetime so that we can close firewall holes
   // if/when permission_broker exits.
   permission_broker_.reset(
@@ -37,16 +37,16 @@ void FirewallService::RegisterAsync(const CompletionAction& callback) {
   permission_broker_->SetPermissionBrokerRemovedCallback(
       base::Bind(&FirewallService::OnPermissionBrokerRemoved,
                  weak_ptr_factory_.GetWeakPtr()));
-#endif  // __BRILLO__
+#endif  // __ANDROID__
 
   dbus_object_.RegisterAsync(callback);
 }
 
-#if !defined(__BRILLO__)
+#if !defined(__ANDROID__)
 void FirewallService::OnPermissionBrokerRemoved(const dbus::ObjectPath& path) {
   LOG(INFO) << "permission_broker died, plugging all firewall holes";
   iptables_.PlugAllHoles();
 }
-#endif  // __BRILLO__
+#endif  // __ANDROID__
 
 }  // namespace firewalld

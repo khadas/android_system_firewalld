@@ -27,7 +27,7 @@
 #include <chromeos/process.h>
 
 namespace {
-#if defined(__BRILLO__)
+#if defined(__ANDROID__)
 const char kIpTablesPath[] = "/system/bin/iptables";
 const char kIp6TablesPath[] = "/system/bin/ip6tables";
 const char kIpPath[] = "/system/bin/ip";
@@ -36,7 +36,7 @@ const char kIpTablesPath[] = "/sbin/iptables";
 const char kIp6TablesPath[] = "/sbin/ip6tables";
 const char kIpPath[] = "/bin/ip";
 const char kUnprivilegedUser[] = "nobody";
-#endif  // __BRILLO__
+#endif  // __ANDROID__
 
 const uint64_t kIpTablesCapMask =
     CAP_TO_MASK(CAP_NET_ADMIN) | CAP_TO_MASK(CAP_NET_RAW);
@@ -73,9 +73,9 @@ bool IsValidInterfaceName(const std::string& iface) {
 namespace firewalld {
 
 IpTables::IpTables() {
-#if defined(__BRILLO__)
+#if defined(__ANDROID__)
   ip6_enabled_ = false;
-#endif  // __BRILLO__
+#endif  // __ANDROID__
 }
 
 IpTables::~IpTables() {
@@ -380,11 +380,11 @@ int IpTables::ExecvNonRoot(const std::vector<std::string>& argv,
                            uint64_t capmask) {
   chromeos::Minijail* m = chromeos::Minijail::GetInstance();
   minijail* jail = m->New();
-#if !defined(__BRILLO__)
+#if !defined(__ANDROID__)
   // TODO(garnold) This needs to be re-enabled once we figure out which
   // unprivileged user we want to use.
   m->DropRoot(jail, kUnprivilegedUser, kUnprivilegedUser);
-#endif  // __BRILLO__
+#endif  // __ANDROID__
   m->UseCapabilities(jail, capmask);
 
   std::vector<char*> args;

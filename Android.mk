@@ -29,7 +29,7 @@ define firewalld_common
       libchromeos-minijail \
       libdbus \
       libminijail
-  LOCAL_CFLAGS += -D__BRILLO__ -Wall -Werror -Wno-unused-parameter
+  LOCAL_CFLAGS += -Wall -Werror -Wno-unused-parameter
   LOCAL_CPPFLAGS += -Wno-sign-promo
 endef
 
