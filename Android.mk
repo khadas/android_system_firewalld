@@ -21,9 +21,6 @@ define firewalld_common
   LOCAL_CPP_EXTENSION := .cc
   LOCAL_RTTI_FLAG := -frtti
   LOCAL_CLANG := true
-  LOCAL_SRC_FILES += \
-      dbus_bindings/dbus-service-config.json \
-      dbus_bindings/org.chromium.Firewalld.dbus.xml
   LOCAL_SHARED_LIBRARIES += \
       libchrome \
       libchrome-dbus \
@@ -38,10 +35,21 @@ endef
 
 ifeq ($(HOST_OS),linux)
 
+# === libfirewalld-client (shared library) ===
+include $(CLEAR_VARS)
+LOCAL_MODULE := libfirewalld-client
+LOCAL_SRC_FILES := \
+    dbus_bindings/dbus-service-config.json \
+    dbus_bindings/org.chromium.Firewalld.dbus.xml
+LOCAL_DBUS_PROXY_PREFIX := firewalld
+include $(BUILD_SHARED_LIBRARY)
+
 # === libfirewalld (static library) ===
 include $(CLEAR_VARS)
 LOCAL_MODULE := libfirewalld
 LOCAL_SRC_FILES := \
+    dbus_bindings/dbus-service-config.json \
+    dbus_bindings/org.chromium.Firewalld.dbus.xml \
     firewall_daemon.cc \
     firewall_service.cc \
     iptables.cc
