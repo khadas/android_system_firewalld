@@ -22,7 +22,7 @@
 #include <chromeos/dbus/dbus_object.h>
 
 #if defined(__BRILLO__)
-# include "dbus_bindings/adaptors.h"
+# include "dbus_bindings/org.chromium.Firewalld.h"
 #else
 # include "permission_broker/dbus-proxies.h"
 # include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
