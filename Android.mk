@@ -40,7 +40,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libfirewalld-client
 LOCAL_SRC_FILES := \
     dbus_bindings/dbus-service-config.json \
-    dbus_bindings/org.chromium.Firewalld.dbus.xml
+    dbus_bindings/org.chromium.Firewalld.dbus-xml
 LOCAL_DBUS_PROXY_PREFIX := firewalld
 include $(BUILD_SHARED_LIBRARY)
 
@@ -49,7 +49,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libfirewalld
 LOCAL_SRC_FILES := \
     dbus_bindings/dbus-service-config.json \
-    dbus_bindings/org.chromium.Firewalld.dbus.xml \
+    dbus_bindings/org.chromium.Firewalld.dbus-xml \
     firewall_daemon.cc \
     firewall_service.cc \
     iptables.cc
