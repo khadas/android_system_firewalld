@@ -67,19 +67,14 @@ LOCAL_C_INCLUDES += external/gtest/include
 $(eval $(firewalld_common))
 include $(BUILD_EXECUTABLE)
 
-# === init.firewalld.rc ===
-ifdef INITRC_TEMPLATE
+# === init.firewalld.rc (brillo only) ===
+ifdef TARGET_COPY_OUT_INITRCD
 include $(CLEAR_VARS)
 LOCAL_MODULE := init.firewalld.rc
+LOCAL_SRC_FILES := $(LOCAL_MODULE)
 LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_PATH := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_INITRCD)
-
-include $(BUILD_SYSTEM)/base_rules.mk
-
-.PHONY: $(LOCAL_BUILT_MODULE)
-$(LOCAL_BUILT_MODULE): my_groups := net_admin net_raw
-$(LOCAL_BUILT_MODULE): $(INITRC_TEMPLATE)
-	$(call generate-initrc-file,firewalld,,$(my_groups))
+include $(BUILD_PREBUILT)
 endif
 
 # === unittest ===
