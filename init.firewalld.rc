@@ -1,10 +1,6 @@
-# TODO(garnold) While we want firewalld to only start after basic firewall
-# rules are setup, its lifespan should be tied to class main, like other
-# services. This needs to be fixed.
-on property:brillo.setup_firewall=1
-    start firewalld
-
 service firewalld /system/bin/firewalld
+    class main
     user system
     group system dbus net_admin net_raw
     seclabel u:r:brillo:s0
+    disabled
