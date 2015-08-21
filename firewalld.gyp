@@ -23,7 +23,7 @@
       'type': 'none',
       'variables': {
         'dbus_service_config': 'dbus_bindings/dbus-service-config.json',
-        'dbus_adaptors_out_dir': 'include/firewalld/dbus_adaptor',
+        'dbus_adaptors_out_dir': 'include/dbus_bindings',
       },
       'sources': [
         'dbus_bindings/org.chromium.Firewalld.xml',

@@ -21,11 +21,9 @@
 #include <base/memory/weak_ptr.h>
 #include <chromeos/dbus/dbus_object.h>
 
-#if defined(__ANDROID__)
-# include "dbus_bindings/org.chromium.Firewalld.h"
-#else
+#include "dbus_bindings/org.chromium.Firewalld.h"
+#if !defined(__ANDROID__)
 # include "permission_broker/dbus-proxies.h"
-# include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
 #endif  // __ANDROID__
 
 #include "iptables.h"

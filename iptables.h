@@ -25,11 +25,7 @@
 #include <base/macros.h>
 #include <chromeos/errors/error.h>
 
-#if defined(__ANDROID__)
-# include "dbus_bindings/org.chromium.Firewalld.h"
-#else
-# include "firewalld/dbus_adaptor/org.chromium.Firewalld.h"
-#endif  // __ANDROID__
+#include "dbus_bindings/org.chromium.Firewalld.h"
 
 namespace firewalld {
 
