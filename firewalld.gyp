@@ -24,9 +24,10 @@
       'variables': {
         'dbus_service_config': 'dbus_bindings/dbus-service-config.json',
         'dbus_adaptors_out_dir': 'include/dbus_bindings',
+        'dbus_xml_extension': 'dbus-xml',
       },
       'sources': [
-        'dbus_bindings/org.chromium.Firewalld.xml',
+        'dbus_bindings/org.chromium.Firewalld.dbus-xml',
       ],
       'includes': ['../common-mk/generate-dbus-adaptors.gypi'],
     },
@@ -43,7 +44,7 @@
             'proxy_path_in_mocks': 'firewalld/dbus-proxies.h',
           },
           'sources': [
-            'dbus_bindings/org.chromium.Firewalld.xml',
+            'dbus_bindings/org.chromium.Firewalld.dbus-xml',
           ],
           'includes': ['../common-mk/generate-dbus-proxies.gypi'],
         },
