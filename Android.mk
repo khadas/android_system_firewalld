@@ -59,23 +59,13 @@ include $(BUILD_STATIC_TEST_LIBRARY)
 # === firewalld ===
 include $(CLEAR_VARS)
 LOCAL_MODULE := firewalld
-LOCAL_REQUIRED_MODULES := init.firewalld.rc
+LOCAL_INIT_RC := init.firewalld.rc
 LOCAL_SRC_FILES := \
     main.cc
 LOCAL_STATIC_LIBRARIES := libfirewalld
 LOCAL_C_INCLUDES += external/gtest/include
 $(eval $(firewalld_common))
 include $(BUILD_EXECUTABLE)
-
-# === init.firewalld.rc (brillo only) ===
-ifdef TARGET_COPY_OUT_INITRCD
-include $(CLEAR_VARS)
-LOCAL_MODULE := init.firewalld.rc
-LOCAL_SRC_FILES := $(LOCAL_MODULE)
-LOCAL_MODULE_CLASS := ETC
-LOCAL_MODULE_PATH := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_INITRCD)
-include $(BUILD_PREBUILT)
-endif
 
 # === unittest ===
 include $(CLEAR_VARS)
