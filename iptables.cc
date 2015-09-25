@@ -53,16 +53,18 @@ const char kTableIdForUserTraffic[] = "1";
 
 bool IsValidInterfaceName(const std::string& iface) {
   // |iface| should be shorter than |kInterfaceNameSize| chars and have only
-  // alphanumeric characters (embedded hypens are also permitted).
+  // alphanumeric characters (embedded hypens and periods are also permitted).
   if (iface.length() >= kInterfaceNameSize) {
     return false;
   }
   if (base::StartsWithASCII(iface, "-", true /* case_sensitive */) ||
-      base::EndsWith(iface, "-", true /* case_sensitive */)) {
+      base::EndsWith(iface, "-", true /* case_sensitive */) ||
+      base::StartsWithASCII(iface, ".", true /* case_sensitive */) ||
+      base::EndsWith(iface, ".", true /* case_sensitive */)) {
     return false;
   }
   for (auto c : iface) {
-    if (!std::isalnum(c) && (c != '-')) {
+    if (!std::isalnum(c) && (c != '-') && (c != '.')) {
       return false;
     }
   }

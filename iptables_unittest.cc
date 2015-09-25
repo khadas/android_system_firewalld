@@ -72,6 +72,8 @@ TEST_F(IpTablesTest, ValidInterfaceName) {
   EXPECT_TRUE(mock_iptables.PunchUdpHole(53, "shortname"));
   EXPECT_TRUE(mock_iptables.PunchTcpHole(80, "middle-dash"));
   EXPECT_TRUE(mock_iptables.PunchUdpHole(53, "middle-dash"));
+  EXPECT_TRUE(mock_iptables.PunchTcpHole(80, "middle.dot"));
+  EXPECT_TRUE(mock_iptables.PunchUdpHole(53, "middle.dot"));
 }
 
 TEST_F(IpTablesTest, InvalidInterfaceName) {
@@ -85,12 +87,16 @@ TEST_F(IpTablesTest, InvalidInterfaceName) {
   EXPECT_FALSE(mock_iptables.PunchTcpHole(80, "with$ymbols"));
   EXPECT_FALSE(mock_iptables.PunchTcpHole(80, "-startdash"));
   EXPECT_FALSE(mock_iptables.PunchTcpHole(80, "enddash-"));
+  EXPECT_FALSE(mock_iptables.PunchTcpHole(80, ".startdot"));
+  EXPECT_FALSE(mock_iptables.PunchTcpHole(80, "enddot."));
 
   EXPECT_FALSE(mock_iptables.PunchUdpHole(53, "reallylonginterfacename"));
   EXPECT_FALSE(mock_iptables.PunchUdpHole(53, "with spaces"));
   EXPECT_FALSE(mock_iptables.PunchUdpHole(53, "with$ymbols"));
   EXPECT_FALSE(mock_iptables.PunchUdpHole(53, "-startdash"));
   EXPECT_FALSE(mock_iptables.PunchUdpHole(53, "enddash-"));
+  EXPECT_FALSE(mock_iptables.PunchUdpHole(53, ".startdot"));
+  EXPECT_FALSE(mock_iptables.PunchUdpHole(53, "enddot."));
 }
 
 TEST_F(IpTablesTest, PunchTcpHoleSucceeds) {
