@@ -59,7 +59,7 @@ include $(BUILD_STATIC_TEST_LIBRARY)
 # === firewalld ===
 include $(CLEAR_VARS)
 LOCAL_MODULE := firewalld
-LOCAL_INIT_RC := init.firewalld.rc
+LOCAL_INIT_RC := firewalld.rc
 LOCAL_SRC_FILES := \
     main.cc
 LOCAL_STATIC_LIBRARIES := libfirewalld
