@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <base/command_line.h>
-#include <chromeos/syslog_logging.h>
+#include <brillo/syslog_logging.h>
 
 #include "firewall_daemon.h"
 
@@ -21,7 +21,7 @@ using firewalld::FirewallDaemon;
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  chromeos::InitLog(chromeos::kLogToSyslog);
+  brillo::InitLog(brillo::kLogToSyslog);
 
   FirewallDaemon daemon;
   return daemon.Run();

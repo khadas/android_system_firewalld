@@ -23,7 +23,7 @@
 #include <vector>
 
 #include <base/macros.h>
-#include <chromeos/errors/error.h>
+#include <brillo/errors/error.h>
 
 #include "dbus_bindings/org.chromium.Firewalld.h"
 

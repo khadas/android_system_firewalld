@@ -23,8 +23,8 @@
 #include <base/strings/string_number_conversions.h>
 #include <base/strings/string_util.h>
 #include <base/strings/stringprintf.h>
-#include <chromeos/minijail/minijail.h>
-#include <chromeos/process.h>
+#include <brillo/minijail/minijail.h>
+#include <brillo/process.h>
 
 namespace {
 #if defined(__ANDROID__)
@@ -366,7 +366,7 @@ bool IpTables::ApplyMarkForUserTraffic(const std::string& user_name,
 }
 
 bool IpTables::ApplyRuleForUserTraffic(bool add) {
-  chromeos::ProcessImpl ip;
+  brillo::ProcessImpl ip;
   ip.AddArg(kIpPath);
   ip.AddArg("rule");
   ip.AddArg(add ? "add" : "delete");
@@ -380,7 +380,7 @@ bool IpTables::ApplyRuleForUserTraffic(bool add) {
 
 int IpTables::ExecvNonRoot(const std::vector<std::string>& argv,
                            uint64_t capmask) {
-  chromeos::Minijail* m = chromeos::Minijail::GetInstance();
+  brillo::Minijail* m = brillo::Minijail::GetInstance();
   minijail* jail = m->New();
 #if !defined(__ANDROID__)
   // TODO(garnold) This needs to be re-enabled once we figure out which

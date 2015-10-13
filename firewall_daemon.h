@@ -16,17 +16,17 @@
 #define FIREWALLD_FIREWALL_DAEMON_H_
 
 #include <base/macros.h>
-#include <chromeos/daemons/dbus_daemon.h>
-#include <chromeos/dbus/async_event_sequencer.h>
+#include <brillo/daemons/dbus_daemon.h>
+#include <brillo/dbus/async_event_sequencer.h>
 
 #include "dbus_interface.h"
 #include "firewall_service.h"
 
-using chromeos::dbus_utils::AsyncEventSequencer;
+using brillo::dbus_utils::AsyncEventSequencer;
 
 namespace firewalld {
 
-class FirewallDaemon : public chromeos::DBusServiceDaemon {
+class FirewallDaemon : public brillo::DBusServiceDaemon {
  public:
   FirewallDaemon();
 

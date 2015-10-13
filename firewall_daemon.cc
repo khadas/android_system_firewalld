@@ -21,8 +21,8 @@
 namespace firewalld {
 
 FirewallDaemon::FirewallDaemon()
-    : chromeos::DBusServiceDaemon{kFirewallServiceName,
-                                  dbus::ObjectPath{kFirewallServicePath}} {
+    : brillo::DBusServiceDaemon{kFirewallServiceName,
+                                dbus::ObjectPath{kFirewallServicePath}} {
 }
 
 void FirewallDaemon::RegisterDBusObjectsAsync(AsyncEventSequencer* sequencer) {

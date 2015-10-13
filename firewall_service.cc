@@ -20,7 +20,7 @@
 namespace firewalld {
 
 FirewallService::FirewallService(
-    chromeos::dbus_utils::ExportedObjectManager* object_manager)
+    brillo::dbus_utils::ExportedObjectManager* object_manager)
     : org::chromium::FirewalldAdaptor(&iptables_),
       dbus_object_{object_manager, object_manager->GetBus(),
                    org::chromium::FirewalldAdaptor::GetObjectPath()} {}

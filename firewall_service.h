@@ -19,7 +19,7 @@
 #include <base/macros.h>
 #include <base/memory/scoped_ptr.h>
 #include <base/memory/weak_ptr.h>
-#include <chromeos/dbus/dbus_object.h>
+#include <brillo/dbus/dbus_object.h>
 
 #include "dbus_bindings/org.chromium.Firewalld.h"
 #if !defined(__ANDROID__)
@@ -29,14 +29,14 @@
 #include "iptables.h"
 
 using CompletionAction =
-    chromeos::dbus_utils::AsyncEventSequencer::CompletionAction;
+    brillo::dbus_utils::AsyncEventSequencer::CompletionAction;
 
 namespace firewalld {
 
 class FirewallService : public org::chromium::FirewalldAdaptor {
  public:
   explicit FirewallService(
-      chromeos::dbus_utils::ExportedObjectManager* object_manager);
+      brillo::dbus_utils::ExportedObjectManager* object_manager);
   virtual ~FirewallService() = default;
 
   // Connects to D-Bus system bus and exports methods.
@@ -47,7 +47,7 @@ class FirewallService : public org::chromium::FirewalldAdaptor {
   void OnPermissionBrokerRemoved(const dbus::ObjectPath& path);
 #endif  // __ANDROID__
 
-  chromeos::dbus_utils::DBusObject dbus_object_;
+  brillo::dbus_utils::DBusObject dbus_object_;
 #if !defined(__ANDROID__)
   std::unique_ptr<org::chromium::PermissionBroker::ObjectManagerProxy>
       permission_broker_;
