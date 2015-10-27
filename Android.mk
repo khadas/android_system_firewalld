@@ -22,11 +22,11 @@ define firewalld_common
   LOCAL_RTTI_FLAG := -frtti
   LOCAL_CLANG := true
   LOCAL_SHARED_LIBRARIES += \
+      libbrillo \
+      libbrillo-dbus \
+      libbrillo-minijail \
       libchrome \
       libchrome-dbus \
-      libchromeos \
-      libchromeos-dbus \
-      libchromeos-minijail \
       libdbus \
       libminijail
   LOCAL_CFLAGS += -Wall -Werror -Wno-unused-parameter
