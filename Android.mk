@@ -19,7 +19,6 @@ LOCAL_PATH := $(call my-dir)
 # Definitions applying to all targets. Be sure to $(eval) this last.
 define firewalld_common
   LOCAL_CPP_EXTENSION := .cc
-  LOCAL_RTTI_FLAG := -frtti
   LOCAL_CLANG := true
   LOCAL_SHARED_LIBRARIES += \
       libbrillo \
