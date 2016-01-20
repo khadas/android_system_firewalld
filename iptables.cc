@@ -57,10 +57,10 @@ bool IsValidInterfaceName(const std::string& iface) {
   if (iface.length() >= kInterfaceNameSize) {
     return false;
   }
-  if (base::StartsWithASCII(iface, "-", true /* case_sensitive */) ||
-      base::EndsWith(iface, "-", true /* case_sensitive */) ||
-      base::StartsWithASCII(iface, ".", true /* case_sensitive */) ||
-      base::EndsWith(iface, ".", true /* case_sensitive */)) {
+  if (base::StartsWith(iface, "-", base::CompareCase::SENSITIVE) ||
+      base::EndsWith(iface, "-", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(iface, ".", base::CompareCase::SENSITIVE) ||
+      base::EndsWith(iface, ".", base::CompareCase::SENSITIVE)) {
     return false;
   }
   for (auto c : iface) {
