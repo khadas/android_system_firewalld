@@ -30,6 +30,7 @@
 namespace firewalld {
 
 enum ProtocolEnum { kProtocolTcp, kProtocolUdp };
+enum IPVersionEnum { kIPv4, kIPv6 };
 
 class IpTables : public org::chromium::FirewalldInterface {
  public:
@@ -90,9 +91,18 @@ class IpTables : public org::chromium::FirewalldInterface {
                      const std::string& interface,
                      bool add);
 
-  virtual bool ApplyMasquerade(const std::string& interface, bool add);
-  virtual bool ApplyMarkForUserTraffic(const std::string& user_name, bool add);
-  virtual bool ApplyRuleForUserTraffic(bool add);
+  virtual bool ApplyMasquerade(const std::string& executable_path,
+                               const std::string& interface,
+                               bool add);
+  virtual bool ApplyMasquerade46(const std::string& interface,
+                                 bool add);
+  virtual bool ApplyMarkForUserTraffic(const std::string& executable_path,
+                                       const std::string& user_name,
+                                       bool add);
+  virtual bool ApplyMarkForUserTraffic46(const std::string& username,
+                                         bool add);
+  virtual bool ApplyRuleForUserTraffic(IPVersionEnum ip_version,
+                                       bool add);
 
   int ExecvNonRoot(const std::vector<std::string>& argv,
                    uint64_t capmask);

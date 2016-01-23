@@ -284,36 +284,81 @@ bool IpTables::DeleteAcceptRule(const std::string& executable_path,
   return ExecvNonRoot(argv, kIpTablesCapMask) == 0;
 }
 
+bool IpTables::ApplyMasquerade46(const std::string& interface, bool add) {
+  bool return_value = true;
+
+  if (!ApplyMasquerade(kIpTablesPath, interface, add)) {
+    LOG(ERROR) << (add ? "Adding" : "Removing")
+               << " masquerade failed for interface " << interface
+               << " using '" << kIpTablesPath << "'";
+    return_value = false;
+    if (add)
+      return false;
+  }
+  if (!ApplyMasquerade(kIp6TablesPath, interface, add)) {
+    LOG(ERROR) << (add ? "Adding" : "Removing")
+               << " masquerade failed for interface " << interface
+               << " using '" << kIp6TablesPath << "'";
+    return_value = false;
+  }
+  return return_value;
+}
+
+bool IpTables::ApplyMarkForUserTraffic46(const std::string& username,
+                                         bool add) {
+  bool return_value = true;
+
+  if (!ApplyMarkForUserTraffic(kIpTablesPath, username, add)) {
+    LOG(ERROR) << (add ? "Adding" : "Removing")
+               << " mark failed for user " << username
+               << " using '" << kIpTablesPath << "'";
+    return_value = false;
+    if (add)
+      return false;
+  }
+  if (!ApplyMarkForUserTraffic(kIp6TablesPath, username, add)) {
+    LOG(ERROR) << (add ? "Adding" : "Removing")
+               << " mark failed for user " << username
+               << " using '" << kIp6TablesPath << "'";
+    return_value = false;
+  }
+  return return_value;
+}
+
 bool IpTables::ApplyVpnSetup(const std::vector<std::string>& usernames,
                              const std::string& interface,
                              bool add) {
   bool return_value = true;
+  std::vector<std::string> added_usernames;
 
-  if (!ApplyRuleForUserTraffic(add)) {
+  if (!ApplyRuleForUserTraffic(kIPv4, add)) {
     LOG(ERROR) << (add ? "Adding" : "Removing")
-               << " rule for user traffic failed";
+               << " rule for IPv4 user traffic failed";
     if (add)
       return false;
     return_value = false;
   }
 
-  if (!ApplyMasquerade(interface, add)) {
+  if (!ApplyRuleForUserTraffic(kIPv6, add)) {
     LOG(ERROR) << (add ? "Adding" : "Removing")
-               << " masquerade failed for interface "
-               << interface;
+               << " rule for IPv6 user traffic failed";
     if (add) {
-      ApplyRuleForUserTraffic(false);
+      ApplyVpnSetup(added_usernames, interface, false);
       return false;
     }
     return_value = false;
   }
 
-  std::vector<std::string> added_usernames;
+  if (!ApplyMasquerade46(interface, add)) {
+    if (add) {
+      ApplyVpnSetup(added_usernames, interface, false);
+      return false;
+    }
+    return_value = false;
+  }
+
   for (const auto& username : usernames) {
-    if (!ApplyMarkForUserTraffic(username, add)) {
-      LOG(ERROR) << (add ? "Adding" : "Removing")
-                 << " mark failed for user "
-                 << username;
+    if (!ApplyMarkForUserTraffic46(username, add)) {
       if (add) {
         ApplyVpnSetup(added_usernames, interface, false);
         return false;
@@ -328,9 +373,11 @@ bool IpTables::ApplyVpnSetup(const std::vector<std::string>& usernames,
   return return_value;
 }
 
-bool IpTables::ApplyMasquerade(const std::string& interface, bool add) {
+bool IpTables::ApplyMasquerade(const std::string& executable_path,
+                               const std::string& interface,
+                               bool add) {
   std::vector<std::string> argv;
-  argv.push_back(kIpTablesPath);
+  argv.push_back(executable_path);
   argv.push_back("-t");  // table
   argv.push_back("nat");
   argv.push_back(add ? "-A" : "-D");  // rule
@@ -344,10 +391,11 @@ bool IpTables::ApplyMasquerade(const std::string& interface, bool add) {
   return ExecvNonRoot(argv, kIpTablesCapMask) == 0;
 }
 
-bool IpTables::ApplyMarkForUserTraffic(const std::string& user_name,
+bool IpTables::ApplyMarkForUserTraffic(const std::string& executable_path,
+                                       const std::string& user_name,
                                        bool add) {
   std::vector<std::string> argv;
-  argv.push_back(kIpTablesPath);
+  argv.push_back(executable_path);
   argv.push_back("-t");  // table
   argv.push_back("mangle");
   argv.push_back(add ? "-A" : "-D");  // rule
@@ -365,9 +413,11 @@ bool IpTables::ApplyMarkForUserTraffic(const std::string& user_name,
   return ExecvNonRoot(argv, kIpTablesCapMask) == 0;
 }
 
-bool IpTables::ApplyRuleForUserTraffic(bool add) {
+bool IpTables::ApplyRuleForUserTraffic(IPVersionEnum ip_version, bool add) {
   brillo::ProcessImpl ip;
   ip.AddArg(kIpPath);
+  if (ip_version == kIPv6)
+    ip.AddArg("-6");
   ip.AddArg("rule");
   ip.AddArg(add ? "add" : "delete");
   ip.AddArg("fwmark");

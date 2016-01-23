@@ -18,6 +18,11 @@
 
 #include "mock_iptables.h"
 
+namespace {
+const char kIpTablesPath[] = "/sbin/iptables";
+const char kIp6TablesPath[] = "/sbin/ip6tables";
+}  // namespace
+
 namespace firewalld {
 
 using testing::_;
@@ -39,13 +44,13 @@ class IpTablesTest : public testing::Test {
   void SetMockExpectationsPerExecutable(MockIpTables* iptables,
                                         bool ip4_success,
                                         bool ip6_success) {
-    EXPECT_CALL(*iptables, AddAcceptRule("/sbin/iptables", _, _, _))
+    EXPECT_CALL(*iptables, AddAcceptRule(kIpTablesPath, _, _, _))
         .WillRepeatedly(Return(ip4_success));
-    EXPECT_CALL(*iptables, AddAcceptRule("/sbin/ip6tables", _, _, _))
+    EXPECT_CALL(*iptables, AddAcceptRule(kIp6TablesPath, _, _, _))
         .WillRepeatedly(Return(ip6_success));
-    EXPECT_CALL(*iptables, DeleteAcceptRule("/sbin/iptables", _, _, _))
+    EXPECT_CALL(*iptables, DeleteAcceptRule(kIpTablesPath, _, _, _))
         .WillRepeatedly(Return(ip4_success));
-    EXPECT_CALL(*iptables, DeleteAcceptRule("/sbin/ip6tables", _, _, _))
+    EXPECT_CALL(*iptables, DeleteAcceptRule(kIp6TablesPath, _, _, _))
         .WillRepeatedly(Return(ip6_success));
   }
 
@@ -183,15 +188,25 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddSuccess) {
   const bool add = true;
 
   MockIpTables mock_iptables;
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, add))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, add))
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables,
-              ApplyMarkForUserTraffic(usernames[0], add))
+              ApplyMarkForUserTraffic(kIpTablesPath, usernames[0], add))
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables,
-              ApplyMarkForUserTraffic(usernames[1], add))
+              ApplyMarkForUserTraffic(kIp6TablesPath, usernames[0], add))
       .WillOnce(Return(true));
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(add))
+  EXPECT_CALL(mock_iptables,
+              ApplyMarkForUserTraffic(kIpTablesPath, usernames[1], add))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables,
+              ApplyMarkForUserTraffic(kIp6TablesPath, usernames[1], add))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, add))
       .WillOnce(Return(true));
 
   ASSERT_TRUE(
@@ -205,31 +220,52 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInUsername) {
   const bool add = true;
 
   MockIpTables mock_iptables;
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, add))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, add))
       .Times(1)
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables,
-              ApplyMarkForUserTraffic(usernames[0], add))
+              ApplyMarkForUserTraffic(kIpTablesPath, usernames[0], add))
       .Times(1)
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables,
-              ApplyMarkForUserTraffic(usernames[1], add))
+              ApplyMarkForUserTraffic(kIp6TablesPath, usernames[0], add))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables,
+              ApplyMarkForUserTraffic(kIpTablesPath, usernames[1], add))
       .Times(1)
       .WillOnce(Return(false));
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(add))
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, add))
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, remove))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, remove))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
       .Times(1)
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables,
-              ApplyMarkForUserTraffic(usernames[0], remove))
+              ApplyMarkForUserTraffic(kIpTablesPath, usernames[0], remove))
       .Times(1)
       .WillOnce(Return(false));
   EXPECT_CALL(mock_iptables,
-              ApplyMarkForUserTraffic(usernames[1], remove)).Times(0);
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(remove))
+              ApplyMarkForUserTraffic(kIp6TablesPath, usernames[0], remove))
+      .Times(1)
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_iptables,
+              ApplyMarkForUserTraffic(kIpTablesPath, usernames[1], remove))
+              .Times(0);
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
+      .Times(1)
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, remove))
       .Times(1)
       .WillOnce(Return(false));
 
@@ -244,17 +280,27 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInMasquerade) {
   const bool add = true;
 
   MockIpTables mock_iptables;
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, add))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
       .Times(1)
       .WillOnce(Return(false));
-  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _)).Times(0);
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(add))
+  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, _)).Times(0);
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, add))
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, remove))
-      .Times(0);
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(remove))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, remove))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, remove))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -269,13 +315,14 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInRuleForUserTraffic) {
   const bool add = true;
 
   MockIpTables mock_iptables;
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, _)).Times(0);
-  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _)).Times(0);
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(add))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, _))
+      .Times(0);
+  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, _)).Times(0);
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add))
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(remove)).Times(0);
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove)).Times(0);
 
   ASSERT_FALSE(
       mock_iptables.ApplyVpnSetup(usernames, interface, add));
@@ -288,21 +335,27 @@ TEST_F(IpTablesTest, ApplyVpnSetupRemoveSuccess) {
   const bool add = true;
 
   MockIpTables mock_iptables;
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, remove))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, remove))
       .Times(1)
       .WillOnce(Return(true));
-  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, remove))
-      .Times(2)
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, remove))
+      .Times(4)
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(remove))
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, remove))
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, add))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
       .Times(0);
-  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, add))
+  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, add))
       .Times(0);
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(add)).Times(0);
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add)).Times(0);
 
   ASSERT_TRUE(
       mock_iptables.ApplyVpnSetup(usernames, interface, remove));
@@ -315,21 +368,27 @@ TEST_F(IpTablesTest, ApplyVpnSetupRemoveFailure) {
   const bool add = true;
 
   MockIpTables mock_iptables;
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, remove))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, remove))
       .Times(1)
-      .WillOnce(Return(false));
-  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, remove))
-      .Times(2)
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(remove))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
       .Times(1)
-      .WillOnce(Return(false));
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, remove))
+      .Times(4)
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
+      .Times(1)
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, remove))
+      .Times(1)
+      .WillRepeatedly(Return(false));
 
-  EXPECT_CALL(mock_iptables, ApplyMasquerade(interface, add))
+  EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
       .Times(0);
-  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, add))
+  EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, add))
       .Times(0);
-  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(add)).Times(0);
+  EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add)).Times(0);
 
   ASSERT_FALSE(
       mock_iptables.ApplyVpnSetup(usernames, interface, remove));

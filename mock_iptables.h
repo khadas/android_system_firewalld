@@ -37,11 +37,15 @@ class MockIpTables : public IpTables {
       DeleteAcceptRule,
       bool(const std::string&, ProtocolEnum, uint16_t, const std::string&));
 
-  MOCK_METHOD2(ApplyMasquerade, bool(const std::string&, bool));
+  MOCK_METHOD3(ApplyMasquerade, bool(const std::string&,
+                                     const std::string&,
+                                     bool));
 
-  MOCK_METHOD2(ApplyMarkForUserTraffic, bool(const std::string&, bool));
+  MOCK_METHOD3(ApplyMarkForUserTraffic, bool(const std::string&,
+                                             const std::string&,
+                                             bool));
 
-  MOCK_METHOD1(ApplyRuleForUserTraffic, bool(bool));
+  MOCK_METHOD2(ApplyRuleForUserTraffic, bool(IPVersionEnum, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIpTables);
