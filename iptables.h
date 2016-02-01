@@ -30,7 +30,6 @@
 namespace firewalld {
 
 enum ProtocolEnum { kProtocolTcp, kProtocolUdp };
-enum IPVersionEnum { kIPv4, kIPv6 };
 
 class IpTables : public org::chromium::FirewalldInterface {
  public:
@@ -91,21 +90,21 @@ class IpTables : public org::chromium::FirewalldInterface {
                      const std::string& interface,
                      bool add);
 
-  virtual bool ApplyMasquerade(const std::string& executable_path,
-                               const std::string& interface,
-                               bool add);
-  virtual bool ApplyMasquerade46(const std::string& interface,
-                                 bool add);
-  virtual bool ApplyMarkForUserTraffic(const std::string& executable_path,
-                                       const std::string& user_name,
-                                       bool add);
-  virtual bool ApplyMarkForUserTraffic46(const std::string& username,
-                                         bool add);
-  virtual bool ApplyRuleForUserTraffic(IPVersionEnum ip_version,
-                                       bool add);
+  virtual bool ApplyMasquerade(const std::string& interface, bool add);
+  bool ApplyMasqueradeWithExecutable(const std::string& interface,
+                                     const std::string& executable_path,
+                                     bool add);
 
-  int ExecvNonRoot(const std::vector<std::string>& argv,
-                   uint64_t capmask);
+  virtual bool ApplyMarkForUserTraffic(const std::string& username, bool add);
+  bool ApplyMarkForUserTrafficWithExecutable(const std::string& username,
+                                             const std::string& executable_path,
+                                             bool add);
+
+  virtual bool ApplyRuleForUserTraffic(bool add);
+  bool ApplyRuleForUserTrafficWithVersion(const std::string& ip_version,
+                                          bool add);
+
+  int ExecvNonRoot(const std::vector<std::string>& argv, uint64_t capmask);
 
   // Keep track of firewall holes to avoid adding redundant firewall rules.
   std::set<Hole> tcp_holes_;
