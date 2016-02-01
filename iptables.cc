@@ -75,9 +75,6 @@ bool IsValidInterfaceName(const std::string& iface) {
 namespace firewalld {
 
 IpTables::IpTables() {
-#if defined(__ANDROID__)
-  ip6_enabled_ = false;
-#endif  // __ANDROID__
 }
 
 IpTables::~IpTables() {
@@ -137,7 +134,7 @@ bool IpTables::PunchHole(uint16_t port,
             << " on interface '" << interface << "'";
   if (!AddAcceptRules(protocol, port, interface)) {
     // If the 'iptables' command fails, this method fails.
-    LOG(ERROR) << "Adding ACCEPT rules failed";
+    LOG(ERROR) << "Adding ACCEPT rules failed.";
     return false;
   }
 
@@ -170,7 +167,7 @@ bool IpTables::PlugHole(uint16_t port,
             << " on interface '" << interface << "'";
   if (!DeleteAcceptRules(protocol, port, interface)) {
     // If the 'iptables' command fails, this method fails.
-    LOG(ERROR) << "Deleting ACCEPT rules failed";
+    LOG(ERROR) << "Deleting ACCEPT rules failed.";
     return false;
   }
 
@@ -214,13 +211,13 @@ bool IpTables::AddAcceptRules(ProtocolEnum protocol,
   } else if (ip6_enabled_) {
     // It's supposed to work, fail.
     LOG(ERROR) << "Could not add ACCEPT rule using '" << kIp6TablesPath
-               << "', aborting operation";
+               << "', aborting operation.";
     DeleteAcceptRule(kIpTablesPath, protocol, port, interface);
     return false;
   } else {
     // It never worked, just ignore it.
     LOG(WARNING) << "Could not add ACCEPT rule using '" << kIp6TablesPath
-                 << "', ignoring";
+                 << "', ignoring.";
   }
 
   return true;
@@ -333,7 +330,7 @@ bool IpTables::ApplyVpnSetup(const std::vector<std::string>& usernames,
 
   if (!ApplyRuleForUserTraffic(kIPv4, add)) {
     LOG(ERROR) << (add ? "Adding" : "Removing")
-               << " rule for IPv4 user traffic failed";
+               << " rule for IPv4 user traffic failed.";
     if (add)
       return false;
     return_value = false;
@@ -341,7 +338,7 @@ bool IpTables::ApplyVpnSetup(const std::vector<std::string>& usernames,
 
   if (!ApplyRuleForUserTraffic(kIPv6, add)) {
     LOG(ERROR) << (add ? "Adding" : "Removing")
-               << " rule for IPv6 user traffic failed";
+               << " rule for IPv6 user traffic failed.";
     if (add) {
       ApplyVpnSetup(added_usernames, interface, false);
       return false;

@@ -19,8 +19,13 @@
 #include "mock_iptables.h"
 
 namespace {
+#if defined(__ANDROID__)
+const char kIpTablesPath[] = "/system/bin/iptables";
+const char kIp6TablesPath[] = "/system/bin/ip6tables";
+#else
 const char kIpTablesPath[] = "/sbin/iptables";
 const char kIp6TablesPath[] = "/sbin/ip6tables";
+#endif  // __ANDROID__
 }  // namespace
 
 namespace firewalld {
@@ -168,21 +173,21 @@ TEST_F(IpTablesTest, PunchUdpHoleFails) {
 
 TEST_F(IpTablesTest, PunchTcpHoleIpv6Fails) {
   MockIpTables mock_iptables;
-  SetMockExpectationsPerExecutable(&mock_iptables, true /* ip4_success */,
-                                   false /* ip6_success */);
+  SetMockExpectationsPerExecutable(
+      &mock_iptables, true /* ip4_success */, false /* ip6_success */);
   // Punch hole for TCP port 80, should fail because 'ip6tables' fails.
   ASSERT_FALSE(mock_iptables.PunchTcpHole(80, "iface"));
 }
 
 TEST_F(IpTablesTest, PunchUdpHoleIpv6Fails) {
   MockIpTables mock_iptables;
-  SetMockExpectationsPerExecutable(&mock_iptables, true /* ip4_success */,
-                                   false /* ip6_success */);
+  SetMockExpectationsPerExecutable(
+      &mock_iptables, true /* ip4_success */, false /* ip6_success */);
   // Punch hole for UDP port 53, should fail because 'ip6tables' fails.
   ASSERT_FALSE(mock_iptables.PunchUdpHole(53, "iface"));
 }
 
-TEST_F(IpTablesTest, ApplyVpnSetupAddSuccess) {
+TEST_F(IpTablesTest, ApplyVpnSetupAdd_Success) {
   const std::vector<std::string> usernames = {"testuser0", "testuser1"};
   const std::string interface = "ifc0";
   const bool add = true;
@@ -192,18 +197,21 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddSuccess) {
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, add))
       .WillOnce(Return(true));
+
   EXPECT_CALL(mock_iptables,
               ApplyMarkForUserTraffic(kIpTablesPath, usernames[0], add))
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables,
               ApplyMarkForUserTraffic(kIp6TablesPath, usernames[0], add))
       .WillOnce(Return(true));
+
   EXPECT_CALL(mock_iptables,
               ApplyMarkForUserTraffic(kIpTablesPath, usernames[1], add))
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables,
               ApplyMarkForUserTraffic(kIp6TablesPath, usernames[1], add))
       .WillOnce(Return(true));
+
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add))
       .WillOnce(Return(true));
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv6, add))
@@ -213,7 +221,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddSuccess) {
       mock_iptables.ApplyVpnSetup(usernames, interface, add));
 }
 
-TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInUsername) {
+TEST_F(IpTablesTest, ApplyVpnSetupAdd_FailureInUsername) {
   const std::vector<std::string> usernames = {"testuser0", "testuser1"};
   const std::string interface = "ifc0";
   const bool remove = false;
@@ -226,6 +234,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInUsername) {
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, add))
       .Times(1)
       .WillOnce(Return(true));
+
   EXPECT_CALL(mock_iptables,
               ApplyMarkForUserTraffic(kIpTablesPath, usernames[0], add))
       .Times(1)
@@ -238,6 +247,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInUsername) {
               ApplyMarkForUserTraffic(kIpTablesPath, usernames[1], add))
       .Times(1)
       .WillOnce(Return(false));
+
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add))
       .Times(1)
       .WillOnce(Return(true));
@@ -251,6 +261,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInUsername) {
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
       .Times(1)
       .WillOnce(Return(true));
+
   EXPECT_CALL(mock_iptables,
               ApplyMarkForUserTraffic(kIpTablesPath, usernames[0], remove))
       .Times(1)
@@ -262,6 +273,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInUsername) {
   EXPECT_CALL(mock_iptables,
               ApplyMarkForUserTraffic(kIpTablesPath, usernames[1], remove))
               .Times(0);
+
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
       .Times(1)
       .WillOnce(Return(false));
@@ -273,7 +285,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInUsername) {
       mock_iptables.ApplyVpnSetup(usernames, interface, add));
 }
 
-TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInMasquerade) {
+TEST_F(IpTablesTest, ApplyVpnSetupAdd_FailureInMasquerade) {
   const std::vector<std::string> usernames = {"testuser0", "testuser1"};
   const std::string interface = "ifc0";
   const bool remove = false;
@@ -283,7 +295,9 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInMasquerade) {
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
       .Times(1)
       .WillOnce(Return(false));
+
   EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, _)).Times(0);
+
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add))
       .Times(1)
       .WillOnce(Return(true));
@@ -297,6 +311,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInMasquerade) {
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
       .Times(1)
       .WillOnce(Return(true));
+
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
       .Times(1)
       .WillOnce(Return(true));
@@ -308,7 +323,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInMasquerade) {
       mock_iptables.ApplyVpnSetup(usernames, interface, add));
 }
 
-TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInRuleForUserTraffic) {
+TEST_F(IpTablesTest, ApplyVpnSetupAdd_FailureInRuleForUserTraffic) {
   const std::vector<std::string> usernames = {"testuser0", "testuser1"};
   const std::string interface = "ifc0";
   const bool remove = false;
@@ -328,7 +343,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupAddFailureInRuleForUserTraffic) {
       mock_iptables.ApplyVpnSetup(usernames, interface, add));
 }
 
-TEST_F(IpTablesTest, ApplyVpnSetupRemoveSuccess) {
+TEST_F(IpTablesTest, ApplyVpnSetupRemove_Success) {
   const std::vector<std::string> usernames = {"testuser0", "testuser1"};
   const std::string interface = "ifc0";
   const bool remove = false;
@@ -341,9 +356,11 @@ TEST_F(IpTablesTest, ApplyVpnSetupRemoveSuccess) {
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
       .Times(1)
       .WillOnce(Return(true));
+
   EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, remove))
       .Times(4)
       .WillRepeatedly(Return(true));
+
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
       .Times(1)
       .WillOnce(Return(true));
@@ -353,6 +370,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupRemoveSuccess) {
 
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
       .Times(0);
+
   EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, add))
       .Times(0);
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add)).Times(0);
@@ -361,7 +379,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupRemoveSuccess) {
       mock_iptables.ApplyVpnSetup(usernames, interface, remove));
 }
 
-TEST_F(IpTablesTest, ApplyVpnSetupRemoveFailure) {
+TEST_F(IpTablesTest, ApplyVpnSetupRemove_Failure) {
   const std::vector<std::string> usernames = {"testuser0", "testuser1"};
   const std::string interface = "ifc0";
   const bool remove = false;
@@ -374,9 +392,11 @@ TEST_F(IpTablesTest, ApplyVpnSetupRemoveFailure) {
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIp6TablesPath, interface, remove))
       .Times(1)
       .WillRepeatedly(Return(false));
+
   EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, remove))
       .Times(4)
       .WillRepeatedly(Return(false));
+
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, remove))
       .Times(1)
       .WillRepeatedly(Return(false));
@@ -386,6 +406,7 @@ TEST_F(IpTablesTest, ApplyVpnSetupRemoveFailure) {
 
   EXPECT_CALL(mock_iptables, ApplyMasquerade(kIpTablesPath, interface, add))
       .Times(0);
+
   EXPECT_CALL(mock_iptables, ApplyMarkForUserTraffic(_, _, add))
       .Times(0);
   EXPECT_CALL(mock_iptables, ApplyRuleForUserTraffic(kIPv4, add)).Times(0);

@@ -55,12 +55,12 @@ class IpTables : public org::chromium::FirewalldInterface {
 
  private:
   friend class IpTablesTest;
-  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAddSuccess);
-  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAddFailureInUsername);
-  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAddFailureInMasquerade);
-  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAddFailureInRuleForUserTraffic);
-  FRIEND_TEST(IpTablesTest, ApplyVpnSetupRemoveSuccess);
-  FRIEND_TEST(IpTablesTest, ApplyVpnSetupRemoveFailure);
+  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAdd_Success);
+  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAdd_FailureInUsername);
+  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAdd_FailureInMasquerade);
+  FRIEND_TEST(IpTablesTest, ApplyVpnSetupAdd_FailureInRuleForUserTraffic);
+  FRIEND_TEST(IpTablesTest, ApplyVpnSetupRemove_Success);
+  FRIEND_TEST(IpTablesTest, ApplyVpnSetupRemove_Failure);
 
   bool PunchHole(uint16_t port,
                  const std::string& interface,

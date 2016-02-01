@@ -67,6 +67,9 @@ include $(BUILD_EXECUTABLE)
 # === unittest ===
 include $(CLEAR_VARS)
 LOCAL_MODULE := firewalld_unittest
+ifdef BRILLO
+  LOCAL_MODULE_TAGS := debug
+endif
 LOCAL_SRC_FILES := \
     iptables_unittest.cc \
     mock_iptables.cc \
